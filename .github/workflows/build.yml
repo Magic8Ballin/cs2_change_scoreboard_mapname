@@ -44,12 +44,18 @@ jobs:
           fetch hl2sdk-manifests alliedmodders/hl2sdk-manifests fbc3a1187c86d0666d82c7ab3e90b5841d604604
           fetch ambuild alliedmodders/ambuild 5b0aa725beef33c9cf6a1b00659a010c3d9120d3
           python -m pip install ./build/deps/ambuild
+      - name: Shorten Windows build paths
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: subst Q: $env:GITHUB_WORKSPACE
       - name: Build
         shell: bash
         run: |
           set -euo pipefail
           if [ "$RUNNER_OS" = Linux ]; then
             export CC=clang CXX=clang++
+          else
+            cd /q
           fi
           mkdir -p build/output
           cd build/output
