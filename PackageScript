@@ -93,6 +93,12 @@ for sdk_target in MMSPlugin.sdk_targets:
 
   packages[sdk['name']] = SDKPackage(cxx, sdk['name'])
 
+  # Include the configuration required by Load in each installable archive.
+  config_path = os.path.join(sdk['name'], 'addons', 'configs')
+  builder.AddFolder(config_path)
+  builder.AddOutputFile(os.path.join(config_path, 'change_scoreboard_mapname.ini'),
+    b'"Change Scoreboard Mapname"\n{\n\t"map_ending" " | My Server"\n\t"use_hostname" "0"\n}\n')
+
 pdb_list = []
 for task in MMSPlugin.binaries:
   # Determine which sdk this binary belongs to since we encode it in its name

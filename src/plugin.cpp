@@ -20,10 +20,6 @@ bool MMSPlugin::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, boo
 	GET_V_IFACE_ANY(GetFileSystemFactory, g_pFullFileSystem, IFileSystem, FILESYSTEM_INTERFACE_VERSION);
 	GET_V_IFACE_CURRENT(GetEngineFactory, g_pNetworkMessages, INetworkMessages, NETWORKMESSAGES_INTERFACE_VERSION);
 
-	g_SMAPI->AddListener( this, this );
-
-	m_Serialize.Add(g_pNetworkMessages);
-
 	const char* pConfigPath = "addons/configs/change_scoreboard_mapname.ini";
 
 	KeyValues::AutoDelete pKeyValues("Change Scoreboard Mapname");
@@ -37,21 +33,35 @@ bool MMSPlugin::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, boo
 	if (!g_bUseHostname)
 		g_sEndingMapName = pKeyValues->GetString("map_ending");
 
+	// Install the hook only after configuration succeeds.
+	m_Serialize.Add(g_pNetworkMessages);
+
 	return true;
 }
 
-KHook::Return<bool> MMSPlugin::Hook_NetSerialize(INetworkMessages *, bf_write &pBuf, const CNetMessage *pData)
+KHook::Return<bool> MMSPlugin::Hook_NetSerialize(INetworkMessages *pMessages, bf_write &pBuf, const CNetMessage *pData)
 {
 	NetMessageInfo_t *pMessageInfo = pData->GetNetMessage()->GetNetMessageInfo();
 
 	if (pMessageInfo->m_MessageId == svc_ClearAllStringTables)
 	{
 		CNetMessagePB<CSVCMsg_ClearAllStringTables> *pMsg = const_cast<CNetMessage*>(pData)->ToPB<CSVCMsg_ClearAllStringTables>();
+		const std::string originalMapName = pMsg->mapname();
+		const bool hadMapName = pMsg->has_mapname();
 		
 		if (g_bUseHostname)
 			pMsg->set_mapname(pMsg->mapname() + " | " + GetHostname());
 		else
 			pMsg->set_mapname(pMsg->mapname() + g_sEndingMapName);
+
+		// The engine can serialize the same message for multiple clients. Keep
+		// the suffix on the wire only, without changing the shared message.
+		const bool result = m_Serialize.CallOriginal(pMessages, pBuf, pData);
+		if (hadMapName)
+			pMsg->set_mapname(originalMapName);
+		else
+			pMsg->clear_mapname();
+		return { KHook::Action::Supersede, result };
 	}
 
 	return { KHook::Action::Ignore };

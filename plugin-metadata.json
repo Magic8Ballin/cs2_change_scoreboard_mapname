@@ -4,8 +4,8 @@
     "display_name": "Change Scoreboard Mapname",
     "description": "Change Scoreboard Mapname",
     "author": "xstage",
-    "url": "https://github.com/qstage",
+    "url": "https://github.com/Magic8Ballin/cs2_change_scoreboard_mapname",
     "log_tag": "Change Scoreboard Mapname",
     "license": "Public Domain",
-    "version": "1.2.0"
+    "version": "1.3.0"
 }

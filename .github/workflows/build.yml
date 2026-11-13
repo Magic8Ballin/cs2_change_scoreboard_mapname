@@ -1,0 +1,73 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            archive: linux
+          - os: windows-2022
+            archive: windows
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Linux compiler
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y clang lld
+      - name: Fetch pinned build dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build/deps
+          fetch() {
+            git init "build/deps/$1"
+            git -C "build/deps/$1" remote add origin "https://github.com/$2.git"
+            git -C "build/deps/$1" fetch --depth 1 origin "$3"
+            git -C "build/deps/$1" checkout --detach FETCH_HEAD
+          }
+          fetch metamod-source alliedmodders/metamod-source ea513d8960c52d266a1c5620dc762def0dd8bce8
+          git -C build/deps/metamod-source submodule update --init --depth 1 third_party/khook
+          fetch hl2sdk-cs2 alliedmodders/hl2sdk 3f4110dce3060b352d49bf100f1a43f7705aab06
+          fetch hl2sdk-manifests alliedmodders/hl2sdk-manifests fbc3a1187c86d0666d82c7ab3e90b5841d604604
+          fetch ambuild alliedmodders/ambuild 5b0aa725beef33c9cf6a1b00659a010c3d9120d3
+          python -m pip install ./build/deps/ambuild
+      - name: Build
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "$RUNNER_OS" = Linux ]; then
+            export CC=clang CXX=clang++
+          fi
+          mkdir -p build/output
+          cd build/output
+          python ../../configure.py --sdks cs2 --targets x86_64 --enable-optimize --mms_path ../deps/metamod-source --hl2sdk-root ../deps --hl2sdk-manifests ../deps/hl2sdk-manifests
+          ambuild
+      - name: Package
+        shell: python
+        run: |
+          import pathlib, shutil
+          root = pathlib.Path('build/output/package/cs2')
+          platform = 'linuxsteamrt64' if '${{ runner.os }}' == 'Linux' else 'win64'
+          extension = 'so' if '${{ runner.os }}' == 'Linux' else 'dll'
+          assert (root / 'addons/change_scoreboard_mapname/bin' / platform / ('change_scoreboard_mapname.' + extension)).is_file()
+          assert (root / 'addons/metamod/change_scoreboard_mapname.vdf').is_file()
+          assert (root / 'addons/configs/change_scoreboard_mapname.ini').is_file()
+          shutil.make_archive('${{ matrix.archive }}', 'zip', root)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.archive }}
+          path: ${{ matrix.archive }}.zip
+          if-no-files-found: error
