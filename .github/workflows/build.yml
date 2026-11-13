@@ -47,7 +47,8 @@ jobs:
       - name: Shorten Windows build paths
         if: runner.os == 'Windows'
         shell: pwsh
-        run: subst Q: $env:GITHUB_WORKSPACE
+        run: |
+          subst Q: $env:GITHUB_WORKSPACE
       - name: Build
         shell: bash
         run: |
