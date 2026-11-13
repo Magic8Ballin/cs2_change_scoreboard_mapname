@@ -14,7 +14,8 @@ Better than other versions because:
 ### Version 1.3.0
 
 Maintained fork of [qstage's plugin](https://github.com/qstage/cs2_change_scoreboard_mapname).
-Built for Metamod:Source 2.0.0-dev+1490 with matching KHook headers and the current CS2 SDK.
+Built for Metamod:Source 2.0.0-dev+1490 with matching KHook headers and AlliedModders' `s2sdk`
+(CS2 network-interface changes from November 2026). The older `hl2sdk` CS2 headers are incompatible.
 Older Metamod/KHook builds are not supported by these binaries.
 
 Download `linux.zip` or `windows.zip` from [Releases](https://github.com/Magic8Ballin/cs2_change_scoreboard_mapname/releases).

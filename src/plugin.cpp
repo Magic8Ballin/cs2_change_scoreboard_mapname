@@ -15,7 +15,6 @@ bool MMSPlugin::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, boo
 {
 	PLUGIN_SAVEVARS();
 
-	GET_V_IFACE_CURRENT(GetEngineFactory, g_pEngineServer, IVEngineServer, INTERFACEVERSION_VENGINESERVER);
 	GET_V_IFACE_CURRENT(GetEngineFactory, g_pCVar, ICvar, CVAR_INTERFACE_VERSION);
 	GET_V_IFACE_ANY(GetFileSystemFactory, g_pFullFileSystem, IFileSystem, FILESYSTEM_INTERFACE_VERSION);
 	GET_V_IFACE_CURRENT(GetEngineFactory, g_pNetworkMessages, INetworkMessages, NETWORKMESSAGES_INTERFACE_VERSION);
@@ -41,7 +40,7 @@ bool MMSPlugin::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, boo
 
 KHook::Return<bool> MMSPlugin::Hook_NetSerialize(INetworkMessages *pMessages, bf_write &pBuf, const CNetMessage *pData)
 {
-	NetMessageInfo_t *pMessageInfo = pData->GetNetMessage()->GetNetMessageInfo();
+	NetMessageInfo_t *pMessageInfo = pData->GetNetMessage();
 
 	if (pMessageInfo->m_MessageId == svc_ClearAllStringTables)
 	{

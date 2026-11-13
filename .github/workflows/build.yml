@@ -40,7 +40,7 @@ jobs:
           }
           fetch metamod-source alliedmodders/metamod-source ea513d8960c52d266a1c5620dc762def0dd8bce8
           git -C build/deps/metamod-source submodule update --init --depth 1 third_party/khook
-          fetch hl2sdk-cs2 alliedmodders/hl2sdk 3f4110dce3060b352d49bf100f1a43f7705aab06
+          fetch hl2sdk-cs2 alliedmodders/s2sdk 58bebeb6e4aa342159638a88f6e4c05bd493e246
           fetch hl2sdk-manifests alliedmodders/hl2sdk-manifests fbc3a1187c86d0666d82c7ab3e90b5841d604604
           fetch ambuild alliedmodders/ambuild 5b0aa725beef33c9cf6a1b00659a010c3d9120d3
           python -m pip install ./build/deps/ambuild

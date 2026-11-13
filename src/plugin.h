@@ -6,7 +6,8 @@
 #include "version_gen.h"
 #include "netmessages.pb.h"
 #include "networksystem/inetworkmessages.h"
-#include "KeyValues.h"
+#include "tier0/keyvalues.h"
+#include "filesystem/ifilesystem.h"
 
 class MMSPlugin : public ISmmPlugin, public IMetamodListener
 {
